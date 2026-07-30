@@ -3,9 +3,9 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: chatbot-postgres
+    container_name: cuhp-postgres
     environment:
-      POSTGRES_DB: chatbot_db
+      POSTGRES_DB: cuhp_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -13,18 +13,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d chatbot_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cuhp_db"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   backend:
     build: .
-    container_name: chatbot-backend
+    container_name: cuhp-backend
     ports:
       - "8080:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/chatbot_db
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/cuhp_db
     depends_on:
       postgres:
         condition: service_healthy

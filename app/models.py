@@ -30,3 +30,16 @@ class Token(Base):
     user = relationship("User", back_populates="tokens")
 
 
+class Audio(Base):
+    __tablename__ = "audios"
+
+    id = Column(String, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    filename = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    r2_key = Column(String, nullable=False)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+
