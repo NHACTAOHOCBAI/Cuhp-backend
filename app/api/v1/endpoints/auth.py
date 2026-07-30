@@ -1,0 +1,100 @@
+import hashlib
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+import uuid
+from datetime import datetime, timedelta
+
+from app import models
+from app.schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse
+from app.core.database import get_db
+from app.api.deps import get_current_user
+
+router = APIRouter()
+
+def get_password_hash(password: str) -> str:
+    salt = "chat_pepper_123"
+    return hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return get_password_hash(plain_password) == hashed_password
+
+def generate_initials(name: str) -> str:
+    parts = name.strip().split()
+    if not parts:
+        return "UN"
+    if len(parts) == 1:
+        return parts[0][:2].upper()
+    return (parts[0][0] + parts[-1][0]).upper()
+
+@router.post("/register", response_model=UserResponse)
+def register(user_in: UserRegister, db: Session = Depends(get_db)):
+    # Check if username exists
+    existing = db.query(models.User).filter(models.User.username == user_in.username).first()
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="Tên đăng nhập đã tồn tại."
+        )
+    
+    # Validate role - only 'admin' is supported now
+    role = "admin"
+        
+    user_id = f"usr-{uuid.uuid4().hex[:8]}"
+    initials = generate_initials(user_in.name)
+    hashed_pwd = get_password_hash(user_in.password)
+    
+    db_user = models.User(
+        id=user_id,
+        username=user_in.username,
+        hashed_password=hashed_pwd,
+        name=user_in.name,
+        initials=initials,
+        role=role,
+        status="offline"
+    )
+    db.add(db_user)
+        
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@router.post("/login", response_model=TokenResponse)
+def login(login_in: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.username == login_in.username).first()
+    if not user or not verify_password(login_in.password, user.hashed_password):
+        raise HTTPException(
+            status_code=400,
+            detail="Tên đăng nhập hoặc mật khẩu không chính xác."
+        )
+        
+    # Set status to online
+    user.status = "online"
+    
+    # Create session token
+    token_str = f"tok-{uuid.uuid4().hex}"
+    expires_at = datetime.utcnow() + timedelta(days=7)
+    
+    db_token = models.Token(
+        token=token_str,
+        user_id=user.id,
+        expires_at=expires_at
+    )
+    db.add(db_token)
+    db.commit()
+    db.refresh(user)
+    
+    return {
+        "token": token_str,
+        "expires_at": expires_at,
+        "user": user
+    }
+
+@router.post("/logout")
+def logout(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Set status to offline
+    current_user.status = "offline"
+    
+    # Delete token
+    db.query(models.Token).filter(models.Token.user_id == current_user.id).delete()
+    db.commit()
+    return {"message": "Đăng xuất thành công."}

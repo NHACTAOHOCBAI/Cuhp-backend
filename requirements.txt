@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+pydantic-settings
+loguru
+sqlalchemy
+psycopg2-binary
+httpx
+websockets
+boto3
+openpyxl
+pillow
+pandas
+python-multipart
