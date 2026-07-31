@@ -1,6 +1,6 @@
 # Cuhp Backend & Audio Service 🍰🎧
 
-Đây là dịch vụ backend FastAPI phụ trách xử lý logic nghiệp vụ cho hệ thống Cuhp và hệ thống Quản lý bài nghe tiếng Anh chạy nền cho Mobile. Hệ thống tích hợp WebSockets thời gian thực, lưu trữ Cloudflare R2 (S3-compatible API) và AWS S3.
+Đây là dịch vụ backend FastAPI phụ trách xử lý logic nghiệp vụ cho hệ thống Cuhp và hệ thống Quản lý bài nghe tiếng Anh chạy nền cho Mobile. Hệ thống tích hợp WebSockets thời gian thực và lưu trữ Cloudflare R2 (S3-compatible API).
 
 ---
 
@@ -10,7 +10,7 @@
 * **Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Hỗ trợ Asynchronous, Background Tasks, WebSockets)
 * **Web Server**: [Uvicorn](https://www.uvicorn.org/)
 * **ORM & Database**: [SQLAlchemy](https://www.sqlalchemy.org/) + [PostgreSQL](https://www.postgresql.org/)
-* **Lưu trữ đám mây**: [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) & [AWS S3](https://aws.amazon.com/s3/) (Sử dụng SDK `boto3` để quản lý upload/delete file âm thanh bài học)
+* **Lưu trữ đám mây**: [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) (Sử dụng SDK `boto3` để quản lý upload/delete file âm thanh bài học)
 
 ---
 
@@ -67,13 +67,6 @@ R2_ACCESS_KEY=your_cloudflare_r2_access_key
 R2_SECRET_KEY=your_cloudflare_r2_secret_key
 R2_BUCKET=your_bucket_name
 R2_PUBLIC_URL=https://pub-<your-unique-subdomain>.r2.dev
-
-# Cấu hình AWS S3 để upload file âm thanh
-AWS_ACCESS_KEY_ID=your_aws_key_id
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=ap-southeast-1
-S3_BUCKET=cuhp-assets
-S3_PUBLIC_BASE_URL=https://cuhp-assets.s3.amazonaws.com
 ```
 
 ### 3. Khởi Chạy Cơ Sở Dữ Liệu qua Docker (Nếu chưa có Postgres ngoài)

@@ -10,12 +10,6 @@ class Settings(BaseSettings):
     azure_openai_endpoint_1: str = ""
     azure_openai_api_key_1: str = ""
     
-    # AWS S3 Settings
-    aws_access_key_id: str = ""
-    aws_secret_access_key: str = ""
-    aws_region: str = ""
-    s3_bucket: str = ""
-    s3_public_base_url: str = ""
 
     # Cloudflare R2 Settings
     r2_endpoint: str = ""
