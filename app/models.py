@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -40,6 +40,10 @@ class Audio(Base):
     r2_key = Column(String, nullable=False)
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    description = Column(Text, nullable=True)
+    level = Column(String(32), nullable=True)
+    category = Column(String(64), nullable=True)
+    transcript = Column(Text, nullable=True)
 
 
 

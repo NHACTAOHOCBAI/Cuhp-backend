@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import hashlib
 from loguru import logger
+from sqlalchemy import inspect, text
 from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.database import Base, engine, SessionLocal
@@ -28,17 +29,47 @@ def seed_database():
                 role="admin",
                 status="offline"
             )
-            
+
             db.add(admin_user)
             db.commit()
     finally:
         db.close()
 
+def ensure_audio_columns():
+    """Idempotently add new columns to the audios table without Alembic.
+
+    Safe to run on every startup: skips columns that already exist.
+    Uses PostgreSQL's ``ADD COLUMN IF NOT EXISTS`` (Postgres 9.6+).
+    """
+    inspector = inspect(engine)
+    if "audios" not in inspector.get_table_names():
+        return  # create_all() will create the table with all columns
+
+    existing = {col["name"] for col in inspector.get_columns("audios")}
+    statements = []
+    if "description" not in existing:
+        statements.append("ALTER TABLE audios ADD COLUMN IF NOT EXISTS description TEXT")
+    if "level" not in existing:
+        statements.append("ALTER TABLE audios ADD COLUMN IF NOT EXISTS level VARCHAR(32)")
+    if "category" not in existing:
+        statements.append("ALTER TABLE audios ADD COLUMN IF NOT EXISTS category VARCHAR(64)")
+    if "transcript" not in existing:
+        statements.append("ALTER TABLE audios ADD COLUMN IF NOT EXISTS transcript TEXT")
+
+    if not statements:
+        return
+
+    with engine.begin() as conn:
+        for stmt in statements:
+            conn.execute(text(stmt))
+    logger.info(f"Applied audio table migrations: {statements}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions: Recreate tables only if they don't exist to preserve data across reloads
     Base.metadata.create_all(bind=engine)
-    
+    ensure_audio_columns()
+
     seed_database()
     logger.info("Database initialized and admin user seeded.")
     yield
