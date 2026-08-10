@@ -64,11 +64,31 @@ def ensure_audio_columns():
             conn.execute(text(stmt))
     logger.info(f"Applied audio table migrations: {statements}")
 
+def ensure_vocabulary_columns():
+    """Idempotently add new columns to the vocabularies table without Alembic."""
+    inspector = inspect(engine)
+    if "vocabularies" not in inspector.get_table_names():
+        return
+
+    existing = {col["name"] for col in inspector.get_columns("vocabularies")}
+    statements = []
+    if "word_type" not in existing:
+        statements.append("ALTER TABLE vocabularies ADD COLUMN IF NOT EXISTS word_type VARCHAR(64)")
+
+    if not statements:
+        return
+
+    with engine.begin() as conn:
+        for stmt in statements:
+            conn.execute(text(stmt))
+    logger.info(f"Applied vocabulary table migrations: {statements}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions: Recreate tables only if they don't exist to preserve data across reloads
     Base.metadata.create_all(bind=engine)
     ensure_audio_columns()
+    ensure_vocabulary_columns()
 
     seed_database()
     logger.info("Database initialized and admin user seeded.")

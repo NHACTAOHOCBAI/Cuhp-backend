@@ -3,12 +3,15 @@ from app.api.v1.endpoints.hello import router as hello_router
 from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.users import router as users_router
 from app.api.v1.endpoints.audio import router as audio_router
+from app.api.v1.endpoints.vocabulary import router as vocabulary_router
 
 api_router = APIRouter()
 api_router.include_router(hello_router, prefix="/v1/hello", tags=["hello"])
 api_router.include_router(auth_router, prefix="/v1/auth", tags=["auth"])
 api_router.include_router(users_router, prefix="/v1/users", tags=["users"])
 api_router.include_router(audio_router, prefix="/v1/audio", tags=["audio"])
+api_router.include_router(vocabulary_router, prefix="/v1/vocabulary", tags=["vocabulary"])
+
 
 
 

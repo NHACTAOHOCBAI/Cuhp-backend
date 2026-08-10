@@ -46,4 +46,22 @@ class Audio(Base):
     transcript = Column(Text, nullable=True)
 
 
+class Vocabulary(Base):
+    __tablename__ = "vocabularies"
+
+    id = Column(String, primary_key=True, index=True)
+    word = Column(String, nullable=False, index=True)
+    pronunciation = Column(String, nullable=True)
+    meaning = Column(String, nullable=False)
+    word_type = Column(String(64), nullable=True, index=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    # Relationships
+    user = relationship("User")
+
+
+
 
