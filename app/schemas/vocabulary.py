@@ -22,10 +22,22 @@ class VocabularyUpdate(BaseModel):
 class VocabularyResponse(VocabularyBase):
     id: str
     user_id: str
+    box_number: int
+    next_review_at: datetime
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class VocabularyReviewRequest(BaseModel):
+    known: bool
+
+class VocabularyReviewResponse(BaseModel):
+    vocabulary: VocabularyResponse
+    daily_target: int
+    current_streak: int
+    words_reviewed_today: int
+    streak_incremented_today: bool
 
 T = TypeVar("T")
 

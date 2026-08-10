@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 
 class UserBase(BaseModel):
@@ -7,6 +7,11 @@ class UserBase(BaseModel):
     name: str
     role: str = "user"  # "admin" or "user"
     status: str = "offline"
+    daily_target: int = 10
+    current_streak: int = 0
+    last_reviewed_date: Optional[date] = None
+    words_reviewed_today: int = 0
+    last_streak_increment_date: Optional[date] = None
 
 class UserRegister(BaseModel):
     username: str

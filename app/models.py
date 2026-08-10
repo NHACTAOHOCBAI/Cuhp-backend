@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Integer, Date
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -14,6 +14,11 @@ class User(Base):
     role = Column(String, nullable=False, default="user")  # "admin" or "user"
     status = Column(String, default="offline")  # "online", "offline", "away"
     created_at = Column(DateTime, default=datetime.utcnow)
+    daily_target = Column(Integer, default=10, nullable=False)
+    current_streak = Column(Integer, default=0, nullable=False)
+    last_reviewed_date = Column(Date, nullable=True)
+    words_reviewed_today = Column(Integer, default=0, nullable=False)
+    last_streak_increment_date = Column(Date, nullable=True)
 
     # Relationships
     tokens = relationship("Token", back_populates="user", cascade="all, delete-orphan")
@@ -58,6 +63,8 @@ class Vocabulary(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    box_number = Column(Integer, default=1, nullable=False)
+    next_review_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
     user = relationship("User")
