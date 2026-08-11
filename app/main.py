@@ -114,6 +114,27 @@ def ensure_user_columns():
             conn.execute(text(stmt))
     logger.info(f"Applied user table migrations: {statements}")
 
+
+def ensure_reading_comment_columns():
+    """Idempotently add selected_text column to reading_comments table without Alembic."""
+    inspector = inspect(engine)
+    if "reading_comments" not in inspector.get_table_names():
+        return
+
+    existing = {col["name"] for col in inspector.get_columns("reading_comments")}
+    statements = []
+    if "selected_text" not in existing:
+        statements.append("ALTER TABLE reading_comments ADD COLUMN IF NOT EXISTS selected_text VARCHAR")
+
+    if not statements:
+        return
+
+    with engine.begin() as conn:
+        for stmt in statements:
+            conn.execute(text(stmt))
+    logger.info(f"Applied reading_comments table migrations: {statements}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions: Recreate tables only if they don't exist to preserve data across reloads
@@ -121,6 +142,7 @@ async def lifespan(app: FastAPI):
     ensure_audio_columns()
     ensure_vocabulary_columns()
     ensure_user_columns()
+    ensure_reading_comment_columns()
 
     seed_database()
     logger.info("Database initialized and admin user seeded.")

@@ -70,5 +70,48 @@ class Vocabulary(Base):
     user = relationship("User")
 
 
+class ReadingPassage(Base):
+    __tablename__ = "reading_passages"
+
+    id = Column(String, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    level = Column(String(32), nullable=True)
+    category = Column(String(64), nullable=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+    comments = relationship("ReadingComment", back_populates="passage", cascade="all, delete-orphan")
+    translations = relationship("TranslationPractice", back_populates="passage", cascade="all, delete-orphan")
 
 
+class TranslationPractice(Base):
+    __tablename__ = "translation_practices"
+
+    id = Column(String, primary_key=True, index=True)
+    passage_id = Column(String, ForeignKey("reading_passages.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    translation_content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    passage = relationship("ReadingPassage", back_populates="translations")
+    user = relationship("User")
+
+
+class ReadingComment(Base):
+    __tablename__ = "reading_comments"
+
+    id = Column(String, primary_key=True, index=True)
+    passage_id = Column(String, ForeignKey("reading_passages.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    content = Column(Text, nullable=False)
+    selected_text = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    passage = relationship("ReadingPassage", back_populates="comments")
+    user = relationship("User")
