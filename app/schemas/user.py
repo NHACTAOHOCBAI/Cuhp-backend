@@ -39,3 +39,8 @@ class TokenResponse(BaseModel):
 
 class RoleUpdate(BaseModel):
     role: str
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    daily_target: Optional[int] = None
+

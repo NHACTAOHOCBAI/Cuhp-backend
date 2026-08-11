@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app import models
-from app.schemas.user import UserResponse, RoleUpdate
+from app.schemas.user import UserResponse, RoleUpdate, UserUpdate
 from app.core.database import get_db
 from app.api.deps import get_current_user, get_current_admin
 
@@ -11,6 +11,26 @@ router = APIRouter()
 
 @router.get("/me", response_model=UserResponse)
 def read_user_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
+
+@router.put("/me", response_model=UserResponse)
+def update_user_me(
+    user_in: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if user_in.name is not None:
+        current_user.name = user_in.name
+    if user_in.daily_target is not None:
+        if user_in.daily_target <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Mục tiêu hàng ngày phải lớn hơn 0."
+            )
+        current_user.daily_target = user_in.daily_target
+        
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 @router.get("", response_model=List[UserResponse])
