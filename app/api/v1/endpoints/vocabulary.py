@@ -42,6 +42,7 @@ def create_vocabulary(
         meaning=payload.meaning.strip(),
         word_type=payload.word_type.strip() if payload.word_type else None,
         notes=payload.notes.strip() if payload.notes else None,
+        context_sentence=payload.context_sentence.strip() if payload.context_sentence else None,
         user_id=current_user.id,
     )
     db.add(db_vocab)
@@ -69,6 +70,7 @@ def list_vocabularies(
                 func.lower(models.Vocabulary.word).like(like),
                 func.lower(models.Vocabulary.meaning).like(like),
                 func.lower(models.Vocabulary.notes).like(like),
+                func.lower(models.Vocabulary.context_sentence).like(like),
             )
         )
 

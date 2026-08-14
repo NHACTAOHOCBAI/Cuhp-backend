@@ -60,6 +60,7 @@ class Vocabulary(Base):
     meaning = Column(String, nullable=False)
     word_type = Column(String(64), nullable=True, index=True)
     notes = Column(Text, nullable=True)
+    context_sentence = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

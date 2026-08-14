@@ -8,6 +8,7 @@ class VocabularyBase(BaseModel):
     meaning: str = Field(..., min_length=1, max_length=500, description="Nghĩa của từ")
     word_type: Optional[str] = Field(None, max_length=64, description="Loại từ (ví dụ: Noun, Verb, Adjective...)")
     notes: Optional[str] = Field(None, max_length=2000, description="Ghi chú thêm")
+    context_sentence: Optional[str] = Field(None, max_length=2000, description="Câu chứa từ vựng (ngữ cảnh)")
 
 class VocabularyCreate(VocabularyBase):
     pass
@@ -18,6 +19,7 @@ class VocabularyUpdate(BaseModel):
     meaning: Optional[str] = Field(None, min_length=1, max_length=500)
     word_type: Optional[str] = Field(None, max_length=64)
     notes: Optional[str] = Field(None, max_length=2000)
+    context_sentence: Optional[str] = Field(None, max_length=2000)
 
 class VocabularyResponse(VocabularyBase):
     id: str

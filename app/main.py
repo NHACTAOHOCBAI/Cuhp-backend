@@ -78,6 +78,8 @@ def ensure_vocabulary_columns():
         statements.append("ALTER TABLE vocabularies ADD COLUMN IF NOT EXISTS box_number INTEGER DEFAULT 1")
     if "next_review_at" not in existing:
         statements.append("ALTER TABLE vocabularies ADD COLUMN IF NOT EXISTS next_review_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    if "context_sentence" not in existing:
+        statements.append("ALTER TABLE vocabularies ADD COLUMN IF NOT EXISTS context_sentence TEXT")
 
     if not statements:
         return
