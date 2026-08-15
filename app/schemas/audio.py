@@ -70,3 +70,35 @@ class BulkDeleteRequest(BaseModel):
 class BulkDeleteResponse(BaseModel):
     deleted: int
     failed: List[str] = []
+
+
+class AudioCommentUser(BaseModel):
+    id: str
+    name: str
+    initials: str
+    role: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AudioCommentBase(BaseModel):
+    content: str = Field(..., min_length=1, description="Nội dung bình luận")
+    selected_text: Optional[str] = Field(None, description="Từ bôi đen được bình luận")
+
+
+class AudioCommentCreate(AudioCommentBase):
+    pass
+
+
+class AudioCommentUpdate(BaseModel):
+    content: str = Field(..., min_length=1, description="Nội dung bình luận")
+
+
+class AudioCommentResponse(AudioCommentBase):
+    id: str
+    audio_id: str
+    user_id: str
+    created_at: datetime
+    user: AudioCommentUser
+
+    model_config = ConfigDict(from_attributes=True)

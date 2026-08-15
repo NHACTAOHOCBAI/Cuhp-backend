@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from app import models
 from app.schemas.audio import (
@@ -18,6 +18,9 @@ from app.schemas.audio import (
     BulkDeleteResponse,
     LEVEL_CHOICES,
     MAX_TRANSCRIPT_LENGTH,
+    AudioCommentCreate,
+    AudioCommentUpdate,
+    AudioCommentResponse,
 )
 from app.core.database import get_db
 from app.api.deps import get_current_user
@@ -295,3 +298,85 @@ def delete_audio(
     db.delete(audio)
     db.commit()
     return {"message": "Đã xóa bài nghe thành công."}
+
+
+@router.get("/{audio_id}/comments", response_model=List[AudioCommentResponse])
+def list_comments(
+    audio_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    audio = db.query(models.Audio).filter(models.Audio.id == audio_id).first()
+    if not audio:
+        raise HTTPException(status_code=404, detail="Không tìm thấy bài nghe.")
+
+    comments = (
+        db.query(models.AudioComment)
+        .filter(models.AudioComment.audio_id == audio_id)
+        .order_by(models.AudioComment.created_at.asc())
+        .all()
+    )
+
+    return comments
+
+
+@router.post("/{audio_id}/comments", response_model=AudioCommentResponse)
+def create_comment(
+    audio_id: str,
+    payload: AudioCommentCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    audio = db.query(models.Audio).filter(models.Audio.id == audio_id).first()
+    if not audio:
+        raise HTTPException(status_code=404, detail="Không tìm thấy bài nghe.")
+
+    comment = models.AudioComment(
+        id=f"cmt-{uuid.uuid4().hex[:8]}",
+        audio_id=audio_id,
+        user_id=current_user.id,
+        content=payload.content.strip(),
+        selected_text=payload.selected_text.strip() if payload.selected_text else None,
+    )
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+    return comment
+
+
+@router.patch("/comments/{comment_id}", response_model=AudioCommentResponse)
+def update_comment(
+    comment_id: str,
+    payload: AudioCommentUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    comment = db.query(models.AudioComment).filter(models.AudioComment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Không tìm thấy bình luận.")
+
+    if comment.user_id != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Bạn không có quyền chỉnh sửa bình luận này.")
+
+    comment.content = payload.content.strip()
+    db.commit()
+    db.refresh(comment)
+    return comment
+
+
+@router.delete("/comments/{comment_id}")
+def delete_comment(
+    comment_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    comment = db.query(models.AudioComment).filter(models.AudioComment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Không tìm thấy bình luận.")
+
+    if comment.user_id != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Bạn không có quyền xóa bình luận này.")
+
+    db.delete(comment)
+    db.commit()
+    return {"message": "Đã xóa bình luận thành công."}

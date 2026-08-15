@@ -60,8 +60,18 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(login_in: UserLogin, db: Session = Depends(get_db)):
+    from loguru import logger
+    logger.info(f"Received login request for user: {login_in.username}")
     user = db.query(models.User).filter(models.User.username == login_in.username).first()
-    if not user or not verify_password(login_in.password, user.hashed_password):
+    if not user:
+        logger.warning(f"Login failed: User {login_in.username} not found in database.")
+        raise HTTPException(
+            status_code=400,
+            detail="Tên đăng nhập hoặc mật khẩu không chính xác."
+        )
+        
+    if not verify_password(login_in.password, user.hashed_password):
+        logger.warning(f"Login failed: Incorrect password for user {login_in.username}.")
         raise HTTPException(
             status_code=400,
             detail="Tên đăng nhập hoặc mật khẩu không chính xác."
@@ -69,6 +79,7 @@ def login(login_in: UserLogin, db: Session = Depends(get_db)):
         
     # Set status to online
     user.status = "online"
+    logger.info(f"User {login_in.username} authenticated successfully. Generating token...")
     
     # Create session token
     token_str = f"tok-{uuid.uuid4().hex}"
@@ -83,6 +94,7 @@ def login(login_in: UserLogin, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     
+    logger.info(f"Token generated successfully for user {login_in.username}.")
     return {
         "token": token_str,
         "expires_at": expires_at,

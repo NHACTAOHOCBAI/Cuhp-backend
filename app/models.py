@@ -50,6 +50,10 @@ class Audio(Base):
     category = Column(String(64), nullable=True)
     transcript = Column(Text, nullable=True)
 
+    # Relationships
+    comments = relationship("AudioComment", back_populates="audio", cascade="all, delete-orphan")
+
+
 
 class Vocabulary(Base):
     __tablename__ = "vocabularies"
@@ -116,3 +120,19 @@ class ReadingComment(Base):
     # Relationships
     passage = relationship("ReadingPassage", back_populates="comments")
     user = relationship("User")
+
+
+class AudioComment(Base):
+    __tablename__ = "audio_comments"
+
+    id = Column(String, primary_key=True, index=True)
+    audio_id = Column(String, ForeignKey("audios.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    content = Column(Text, nullable=False)
+    selected_text = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    audio = relationship("Audio", back_populates="comments")
+    user = relationship("User")
+
