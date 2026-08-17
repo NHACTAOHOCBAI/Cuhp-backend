@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Integer, Date
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Integer, Date, Float, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -135,4 +135,38 @@ class AudioComment(Base):
     # Relationships
     audio = relationship("Audio", back_populates="comments")
     user = relationship("User")
+
+
+class WorkoutCategory(Base):
+    __tablename__ = "workout_categories"
+
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String, nullable=False)
+    color = Column(String, nullable=False, default="emerald")  # e.g., emerald, blue, violet, rose, amber, cyan
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+    exercises = relationship("WorkoutExercise", back_populates="category", cascade="all, delete-orphan")
+
+
+class WorkoutExercise(Base):
+    __tablename__ = "workout_exercises"
+
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    category_id = Column(String, ForeignKey("workout_categories.id", ondelete="SET NULL"), nullable=True)
+    name = Column(String, nullable=False)
+    date = Column(Date, nullable=False, index=True)
+    sets = Column(Integer, default=3, nullable=False)
+    reps = Column(Integer, default=10, nullable=False)
+    weight = Column(Float, nullable=True)  # Weight in kg, nullable for cardio/bodyweight
+    completed = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+    category = relationship("WorkoutCategory", back_populates="exercises")
+
 
