@@ -170,3 +170,36 @@ class WorkoutExercise(Base):
     category = relationship("WorkoutCategory", back_populates="exercises")
 
 
+class TodoTask(Base):
+    """A single task placed in one of the four Eisenhower matrix quadrants.
+
+    Quadrant values (see app/schemas/todo.py for the canonical list):
+      - "do"        : urgent + important        -> làm ngay
+      - "schedule"  : important, not urgent     -> lên lịch
+      - "delegate"  : urgent, not important     -> ủy thác
+      - "eliminate" : neither                   -> loại bỏ
+
+    Tasks are a rolling backlog: they are not bound to a single day. An
+    optional `due_date` drives the "Hôm nay / Tuần này / Tất cả" filters and
+    the overdue badge, and an unfinished task stays visible until completed.
+    """
+
+    __tablename__ = "todo_tasks"
+
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    quadrant = Column(String(16), nullable=False, default="do", index=True)
+    due_date = Column(Date, nullable=True, index=True)
+    completed = Column(Boolean, default=False, nullable=False)
+    completed_at = Column(DateTime, nullable=True)
+    # Ordering inside a quadrant; smaller comes first. Reassigned on drag-drop.
+    position = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+
+
