@@ -192,6 +192,7 @@ class TodoTask(Base):
     description = Column(Text, nullable=True)
     quadrant = Column(String(16), nullable=False, default="do", index=True)
     due_date = Column(Date, nullable=True, index=True)
+    scheduled_date = Column(Date, nullable=True, index=True)
     completed = Column(Boolean, default=False, nullable=False)
     completed_at = Column(DateTime, nullable=True)
     # Ordering inside a quadrant; smaller comes first. Reassigned on drag-drop.

@@ -4,9 +4,10 @@ from typing import Optional, List
 
 # The four Eisenhower quadrants. Kept as plain strings (not a DB enum) so new
 # values never require a migration, but validated on the way in.
-QUADRANTS = ("do", "schedule", "delegate", "eliminate")
+QUADRANTS = ("inbox", "do", "schedule", "delegate", "eliminate")
 
 QUADRANT_LABELS = {
+    "inbox": "Hộp việc tuần này",
     "do": "Khẩn cấp & Quan trọng",
     "schedule": "Quan trọng, không khẩn cấp",
     "delegate": "Khẩn cấp, không quan trọng",
@@ -28,6 +29,7 @@ class TodoTaskBase(BaseModel):
     description: Optional[str] = None
     quadrant: str = "do"
     due_date: Optional[date] = None
+    scheduled_date: Optional[date] = None
     completed: bool = False
 
     @field_validator("quadrant")
@@ -53,6 +55,7 @@ class TodoTaskUpdate(BaseModel):
     description: Optional[str] = None
     quadrant: Optional[str] = None
     due_date: Optional[date] = None
+    scheduled_date: Optional[date] = None
     completed: Optional[bool] = None
     position: Optional[int] = None
 

@@ -137,6 +137,26 @@ def ensure_reading_comment_columns():
     logger.info(f"Applied reading_comments table migrations: {statements}")
 
 
+def ensure_todo_columns():
+    """Idempotently add scheduled_date column to todo_tasks table without Alembic."""
+    inspector = inspect(engine)
+    if "todo_tasks" not in inspector.get_table_names():
+        return
+
+    existing = {col["name"] for col in inspector.get_columns("todo_tasks")}
+    statements = []
+    if "scheduled_date" not in existing:
+        statements.append("ALTER TABLE todo_tasks ADD COLUMN IF NOT EXISTS scheduled_date DATE")
+
+    if not statements:
+        return
+
+    with engine.begin() as conn:
+        for stmt in statements:
+            conn.execute(text(stmt))
+    logger.info(f"Applied todo_tasks table migrations: {statements}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions: Recreate tables only if they don't exist to preserve data across reloads
@@ -145,6 +165,7 @@ async def lifespan(app: FastAPI):
     ensure_vocabulary_columns()
     ensure_user_columns()
     ensure_reading_comment_columns()
+    ensure_todo_columns()
 
     seed_database()
     logger.info("Database initialized and admin user seeded.")
