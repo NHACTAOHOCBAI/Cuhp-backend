@@ -160,6 +160,7 @@ def create_task(
         scheduled_date=task_in.scheduled_date,
         completed=task_in.completed,
         completed_at=datetime.utcnow() if task_in.completed else None,
+        estimated_time=task_in.estimated_time,
         position=_next_position(db, current_user.id, task_in.quadrant),
     )
     db.add(task)
@@ -189,6 +190,8 @@ def update_task(
         task.due_date = task_in.due_date
     if "scheduled_date" in provided:
         task.scheduled_date = task_in.scheduled_date
+    if "estimated_time" in provided:
+        task.estimated_time = task_in.estimated_time
     if task_in.position is not None:
         task.position = task_in.position
     if task_in.completed is not None and task_in.completed != task.completed:

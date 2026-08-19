@@ -31,6 +31,7 @@ class TodoTaskBase(BaseModel):
     due_date: Optional[date] = None
     scheduled_date: Optional[date] = None
     completed: bool = False
+    estimated_time: Optional[int] = None
 
     @field_validator("quadrant")
     @classmethod
@@ -58,6 +59,7 @@ class TodoTaskUpdate(BaseModel):
     scheduled_date: Optional[date] = None
     completed: Optional[bool] = None
     position: Optional[int] = None
+    estimated_time: Optional[int] = None
 
     @field_validator("quadrant")
     @classmethod

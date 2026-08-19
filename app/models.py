@@ -195,6 +195,7 @@ class TodoTask(Base):
     scheduled_date = Column(Date, nullable=True, index=True)
     completed = Column(Boolean, default=False, nullable=False)
     completed_at = Column(DateTime, nullable=True)
+    estimated_time = Column(Integer, nullable=True) # Estimated time in minutes
     # Ordering inside a quadrant; smaller comes first. Reassigned on drag-drop.
     position = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)

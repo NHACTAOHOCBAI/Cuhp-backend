@@ -138,7 +138,7 @@ def ensure_reading_comment_columns():
 
 
 def ensure_todo_columns():
-    """Idempotently add scheduled_date column to todo_tasks table without Alembic."""
+    """Idempotently add scheduled_date and estimated_time columns to todo_tasks table without Alembic."""
     inspector = inspect(engine)
     if "todo_tasks" not in inspector.get_table_names():
         return
@@ -147,6 +147,8 @@ def ensure_todo_columns():
     statements = []
     if "scheduled_date" not in existing:
         statements.append("ALTER TABLE todo_tasks ADD COLUMN IF NOT EXISTS scheduled_date DATE")
+    if "estimated_time" not in existing:
+        statements.append("ALTER TABLE todo_tasks ADD COLUMN IF NOT EXISTS estimated_time INTEGER")
 
     if not statements:
         return
