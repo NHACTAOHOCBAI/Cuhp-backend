@@ -73,6 +73,7 @@ class ReadingPassageUpdate(BaseModel):
 class ReadingPassageListItem(BaseModel):
     id: str
     title: str
+    content: str = Field("", description="Trích đoạn nội dung để hiển thị preview")
     level: Optional[str] = None
     category: Optional[str] = None
     user_id: str
