@@ -1,3 +1,4 @@
+import datetime as dt_module
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime, date
 from typing import Optional, List
@@ -37,7 +38,7 @@ class WorkoutExerciseCreate(WorkoutExerciseBase):
 
 class WorkoutExerciseUpdate(BaseModel):
     name: Optional[str] = None
-    date: Optional[date] = None
+    date: Optional[dt_module.date] = None
     sets: Optional[int] = None
     reps: Optional[int] = None
     weight: Optional[float] = None

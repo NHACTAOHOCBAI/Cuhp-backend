@@ -201,9 +201,11 @@ def update_exercise(
             detail="Không tìm thấy bài tập này."
         )
         
+    provided = exercise_in.model_fields_set
+        
     # Verify category if changing
-    if exercise_in.category_id is not None:
-        if exercise_in.category_id == "":
+    if "category_id" in provided:
+        if exercise_in.category_id is None or exercise_in.category_id == "":
             exercise.category_id = None
         else:
             category = db.query(models.WorkoutCategory).filter(
@@ -217,17 +219,17 @@ def update_exercise(
                 )
             exercise.category_id = exercise_in.category_id
 
-    if exercise_in.name is not None:
+    if "name" in provided:
         exercise.name = exercise_in.name
-    if exercise_in.date is not None:
+    if "date" in provided:
         exercise.date = exercise_in.date
-    if exercise_in.sets is not None:
+    if "sets" in provided:
         exercise.sets = exercise_in.sets
-    if exercise_in.reps is not None:
+    if "reps" in provided:
         exercise.reps = exercise_in.reps
-    if exercise_in.weight is not None:
+    if "weight" in provided:
         exercise.weight = exercise_in.weight
-    if exercise_in.completed is not None:
+    if "completed" in provided:
         exercise.completed = exercise_in.completed
         
     db.commit()
