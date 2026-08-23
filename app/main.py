@@ -117,6 +117,31 @@ def ensure_user_columns():
     logger.info(f"Applied user table migrations: {statements}")
 
 
+def ensure_user_sleep_columns():
+    """Idempotently add sleep setting columns to the users table without Alembic."""
+    inspector = inspect(engine)
+    if "users" not in inspector.get_table_names():
+        return
+
+    existing = {col["name"] for col in inspector.get_columns("users")}
+    statements = []
+    if "sleep_bedtime" not in existing:
+        statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS sleep_bedtime VARCHAR DEFAULT '22:00'")
+    if "sleep_waketime" not in existing:
+        statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS sleep_waketime VARCHAR DEFAULT '06:00'")
+    if "sleep_reminder_enabled" not in existing:
+        statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS sleep_reminder_enabled BOOLEAN DEFAULT TRUE")
+
+    if not statements:
+        return
+
+    with engine.begin() as conn:
+        for stmt in statements:
+            conn.execute(text(stmt))
+    logger.info(f"Applied user sleep columns migrations: {statements}")
+
+
+
 def ensure_reading_comment_columns():
     """Idempotently add selected_text column to reading_comments table without Alembic."""
     inspector = inspect(engine)
@@ -166,6 +191,7 @@ async def lifespan(app: FastAPI):
     ensure_audio_columns()
     ensure_vocabulary_columns()
     ensure_user_columns()
+    ensure_user_sleep_columns()
     ensure_reading_comment_columns()
     ensure_todo_columns()
 

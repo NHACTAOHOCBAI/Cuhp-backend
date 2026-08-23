@@ -20,6 +20,11 @@ class User(Base):
     words_reviewed_today = Column(Integer, default=0, nullable=False)
     last_streak_increment_date = Column(Date, nullable=True)
 
+    # Sleep Settings
+    sleep_bedtime = Column(String, default="22:00", nullable=False)
+    sleep_waketime = Column(String, default="06:00", nullable=False)
+    sleep_reminder_enabled = Column(Boolean, default=True, nullable=False)
+
     # Relationships
     tokens = relationship("Token", back_populates="user", cascade="all, delete-orphan")
 
@@ -203,5 +208,22 @@ class TodoTask(Base):
 
     # Relationships
     user = relationship("User")
+
+
+class SleepLog(Base):
+    __tablename__ = "sleep_logs"
+
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    sleep_date = Column(Date, nullable=False, index=True)
+    sleep_time_actual = Column(DateTime, nullable=False)
+    wake_time_actual = Column(DateTime, nullable=False)
+    duration_minutes = Column(Float, nullable=False)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+
 
 

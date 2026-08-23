@@ -7,6 +7,7 @@ from app.api.v1.endpoints.vocabulary import router as vocabulary_router
 from app.api.v1.endpoints.reading import router as reading_router
 from app.api.v1.endpoints.gym import router as gym_router
 from app.api.v1.endpoints.todo import router as todo_router
+from app.api.v1.endpoints.sleep import router as sleep_router
 
 api_router = APIRouter()
 api_router.include_router(hello_router, prefix="/v1/hello", tags=["hello"])
@@ -17,6 +18,8 @@ api_router.include_router(vocabulary_router, prefix="/v1/vocabulary", tags=["voc
 api_router.include_router(reading_router, prefix="/v1/reading", tags=["reading"])
 api_router.include_router(gym_router, prefix="/v1/gym", tags=["gym"])
 api_router.include_router(todo_router, prefix="/v1/todo", tags=["todo"])
+api_router.include_router(sleep_router, prefix="/v1/sleep", tags=["sleep"])
+
 
 
 

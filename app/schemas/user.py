@@ -12,6 +12,9 @@ class UserBase(BaseModel):
     last_reviewed_date: Optional[date] = None
     words_reviewed_today: int = 0
     last_streak_increment_date: Optional[date] = None
+    sleep_bedtime: str = "22:00"
+    sleep_waketime: str = "06:00"
+    sleep_reminder_enabled: bool = True
 
 class UserRegister(BaseModel):
     username: str
@@ -43,4 +46,7 @@ class RoleUpdate(BaseModel):
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     daily_target: Optional[int] = None
+    sleep_bedtime: Optional[str] = None
+    sleep_waketime: Optional[str] = None
+    sleep_reminder_enabled: Optional[bool] = None
 
