@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import hashlib
+import uuid
 from loguru import logger
 from sqlalchemy import inspect, text
 from app.api.v1.api import api_router
@@ -31,6 +32,32 @@ def seed_database():
             )
 
             db.add(admin_user)
+            db.commit()
+
+        # Seed default habits for admin if they don't exist
+        admin_user = db.query(models.User).filter(models.User.id == "usr-admin").first()
+        if admin_user and db.query(models.Habit).filter(models.Habit.user_id == "usr-admin").first() is None:
+            default_habits = [
+                ("Sleep at 10 pm", "Moon", "Nên đi ngủ đúng 10h tối để đảm bảo sức khoẻ", 1),
+                ("Wake up at 7 am", "Sun", "Thức dậy lúc 7h sáng để bắt đầu ngày mới tỉnh táo", 2),
+                ("Water (2l)", "Droplet", "Uống đủ 2 lít nước mỗi ngày", 3),
+                ("Record expenses", "DollarSign", "Ghi chép chi tiêu chi tiết hàng ngày", 4),
+                ("Work out", "Dumbbell", "Tập thể dục ít nhất 30 phút", 5),
+                ("Daily english homework", "GraduationCap", "Làm bài tập tiếng Anh hàng ngày", 6),
+                ("Learn vocabulary (10 words)", "BookOpen", "Học thêm 10 từ vựng tiếng Anh mới", 7),
+                ("Shadowing (30 - 50 min)", "Volume2", "Luyện Shadowing từ 30 đến 50 phút", 8),
+            ]
+            for name, icon, desc, order in default_habits:
+                habit = models.Habit(
+                    id=f"hab-{uuid.uuid4().hex[:12]}",
+                    user_id="usr-admin",
+                    name=name,
+                    icon=icon,
+                    description=desc,
+                    is_active=True,
+                    order=order
+                )
+                db.add(habit)
             db.commit()
     finally:
         db.close()

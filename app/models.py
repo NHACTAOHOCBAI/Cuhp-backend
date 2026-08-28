@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Integer, Date, Float, Boolean
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Integer, Date, Float, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -224,6 +224,39 @@ class SleepLog(Base):
 
     # Relationships
     user = relationship("User")
+
+
+class Habit(Base):
+    __tablename__ = "habits"
+
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String, nullable=False)
+    icon = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    order = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+    logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan")
+
+
+class HabitLog(Base):
+    __tablename__ = "habit_logs"
+    __table_args__ = (UniqueConstraint("habit_id", "date", name="uq_habit_log_date"),)
+
+    id = Column(String, primary_key=True, index=True)
+    habit_id = Column(String, ForeignKey("habits.id", ondelete="CASCADE"), nullable=False)
+    date = Column(Date, nullable=False, index=True)
+    completed = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    habit = relationship("Habit", back_populates="logs")
+
 
 
 
