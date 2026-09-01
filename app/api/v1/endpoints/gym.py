@@ -341,9 +341,10 @@ def get_gym_stats(
     today = date.today()
     weekly_volume = []
     
-    # Calculate daily volumes for the last 7 days (today inclusive)
-    for i in range(6, -1, -1):
-        d = today - timedelta(days=i)
+    # Calculate daily volumes for current calendar week (Monday to Sunday)
+    start_of_week = today - timedelta(days=today.weekday())
+    for i in range(7):
+        d = start_of_week + timedelta(days=i)
         exercises = db.query(models.WorkoutExercise).filter(
             models.WorkoutExercise.user_id == current_user.id,
             models.WorkoutExercise.date == d
