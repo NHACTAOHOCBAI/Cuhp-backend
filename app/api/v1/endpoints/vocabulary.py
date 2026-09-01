@@ -55,7 +55,7 @@ def list_vocabularies(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(20, ge=1, le=1000),
     q: Optional[str] = Query(None, description="Tìm theo từ, nghĩa hoặc ghi chú"),
     word_type: Optional[str] = Query(None),
     due: Optional[bool] = Query(None, description="Lọc từ đến hạn ôn tập"),
