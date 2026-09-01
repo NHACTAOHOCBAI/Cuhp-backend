@@ -13,3 +13,4 @@ openpyxl
 pillow
 pandas
 python-multipart
+eng-to-ipa

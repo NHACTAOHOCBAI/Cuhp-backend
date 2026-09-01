@@ -101,4 +101,16 @@ class AudioCommentResponse(AudioCommentBase):
     created_at: datetime
     user: AudioCommentUser
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AudioIpaRequest(BaseModel):
+    text: str = Field(..., min_length=1, description="Text/HTML to convert to IPA")
+
+
+class AudioIpaResponse(BaseModel):
+    id: Optional[str] = None
+    title: Optional[str] = None
+    phonetic: str
+    interlinear: str
+

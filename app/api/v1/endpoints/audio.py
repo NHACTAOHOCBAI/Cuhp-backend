@@ -21,7 +21,10 @@ from app.schemas.audio import (
     AudioCommentCreate,
     AudioCommentUpdate,
     AudioCommentResponse,
+    AudioIpaRequest,
+    AudioIpaResponse,
 )
+from app.services.ipa import get_all_ipa_formats, convert_text_to_ipa
 from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.core.config import settings
@@ -205,6 +208,42 @@ def get_audio(
             detail="Không tìm thấy bài nghe."
         )
     return audio
+
+
+@router.get("/{audio_id}/ipa", response_model=AudioIpaResponse)
+def get_audio_ipa(
+    audio_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    audio = db.query(models.Audio).filter(models.Audio.id == audio_id).first()
+    if not audio:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Không tìm thấy bài nghe."
+        )
+
+    transcript_text = audio.transcript or ""
+    formats = get_all_ipa_formats(transcript_text)
+
+    return AudioIpaResponse(
+        id=audio.id,
+        title=audio.title,
+        phonetic=formats["phonetic"],
+        interlinear=formats["interlinear"],
+    )
+
+
+@router.post("/transcribe-ipa", response_model=AudioIpaResponse)
+def transcribe_text_ipa(
+    payload: AudioIpaRequest,
+    current_user: models.User = Depends(get_current_user),
+):
+    formats = get_all_ipa_formats(payload.text)
+    return AudioIpaResponse(
+        phonetic=formats["phonetic"],
+        interlinear=formats["interlinear"],
+    )
 
 
 @router.patch("/{audio_id}", response_model=AudioResponse)
