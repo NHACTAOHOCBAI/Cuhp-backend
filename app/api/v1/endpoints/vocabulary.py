@@ -97,55 +97,18 @@ def list_vocabularies(
         page_size=page_size
     )
 
+from app.services.lookup import lookup_vocabulary_details
+
 @router.get("/lookup/word")
 def lookup_word(
     word: str = Query(..., description="Từ vựng cần tra cứu"),
     current_user: models.User = Depends(get_current_user),
 ):
-    word = word.strip()
-    if not word:
+    if not word or not word.strip():
         raise HTTPException(status_code=400, detail="Từ vựng không được để trống.")
 
-    pronunciation = None
-    word_type = None
-    meaning = None
+    return lookup_vocabulary_details(word)
 
-    # 1. Dictionary lookup (phonetic & partOfSpeech)
-    try:
-        dict_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{urllib.parse.quote(word)}"
-        req = urllib.request.Request(dict_url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=3) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            if isinstance(data, list) and len(data) > 0:
-                entry = data[0]
-                pronunciation = entry.get("phonetic")
-                if not pronunciation and "phonetics" in entry:
-                    for p in entry["phonetics"]:
-                        if p.get("text"):
-                            pronunciation = p["text"]
-                            break
-                if "meanings" in entry and len(entry["meanings"]) > 0:
-                    word_type = entry["meanings"][0].get("partOfSpeech")
-    except Exception:
-        pass
-
-    # 2. Google Translate lookup (Vietnamese meaning)
-    try:
-        trans_url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q={urllib.parse.quote(word)}"
-        req = urllib.request.Request(trans_url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=3) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list) and len(data[0]) > 0:
-                meaning = data[0][0][0]
-    except Exception:
-        pass
-
-    return {
-        "word": word,
-        "pronunciation": pronunciation,
-        "meaning": meaning,
-        "word_type": word_type,
-    }
 
 
 @router.get("/{vocab_id}", response_model=VocabularyResponse)
