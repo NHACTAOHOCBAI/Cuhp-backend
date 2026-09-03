@@ -13,6 +13,7 @@ class User(Base):
     initials = Column(String, nullable=False)
     role = Column(String, nullable=False, default="user")  # "admin" or "user"
     status = Column(String, default="offline")  # "online", "offline", "away"
+    avatar = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     daily_target = Column(Integer, default=10, nullable=False)
     current_streak = Column(Integer, default=0, nullable=False)

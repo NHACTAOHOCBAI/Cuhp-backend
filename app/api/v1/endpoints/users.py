@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app import models
-from app.schemas.user import UserResponse, RoleUpdate, UserUpdate
+from app.schemas.user import UserResponse, RoleUpdate, UserUpdate, PasswordChange
 from app.core.database import get_db
 from app.api.deps import get_current_user, get_current_admin
+from app.api.v1.endpoints.auth import get_password_hash, verify_password
 
 router = APIRouter()
 
@@ -21,6 +22,8 @@ def update_user_me(
 ):
     if user_in.name is not None:
         current_user.name = user_in.name
+    if user_in.avatar is not None:
+        current_user.avatar = user_in.avatar
     if user_in.daily_target is not None:
         if user_in.daily_target <= 0:
             raise HTTPException(
@@ -32,6 +35,26 @@ def update_user_me(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+@router.put("/me/password")
+def update_user_password(
+    password_in: PasswordChange,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not verify_password(password_in.old_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=400,
+            detail="Mật khẩu hiện tại không chính xác."
+        )
+    if len(password_in.new_password.strip()) < 4:
+        raise HTTPException(
+            status_code=400,
+            detail="Mật khẩu mới phải có ít nhất 4 ký tự."
+        )
+    current_user.hashed_password = get_password_hash(password_in.new_password)
+    db.commit()
+    return {"message": "Đã đổi mật khẩu thành công."}
 
 @router.get("", response_model=List[UserResponse])
 def read_users(

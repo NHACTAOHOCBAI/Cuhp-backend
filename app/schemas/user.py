@@ -5,6 +5,7 @@ from typing import Optional
 class UserBase(BaseModel):
     username: str
     name: str
+    avatar: Optional[str] = None
     role: str = "user"  # "admin" or "user"
     status: str = "offline"
     daily_target: int = 10
@@ -45,8 +46,14 @@ class RoleUpdate(BaseModel):
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
+    avatar: Optional[str] = None
     daily_target: Optional[int] = None
     sleep_bedtime: Optional[str] = None
     sleep_waketime: Optional[str] = None
     sleep_reminder_enabled: Optional[bool] = None
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
+
 

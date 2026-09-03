@@ -134,6 +134,8 @@ def ensure_user_columns():
         statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS words_reviewed_today INTEGER DEFAULT 0")
     if "last_streak_increment_date" not in existing:
         statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_streak_increment_date DATE")
+    if "avatar" not in existing:
+        statements.append("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar VARCHAR")
 
     if not statements:
         return
