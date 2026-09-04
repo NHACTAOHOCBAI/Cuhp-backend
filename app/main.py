@@ -213,6 +213,28 @@ def ensure_todo_columns():
     logger.info(f"Applied todo_tasks table migrations: {statements}")
 
 
+def ensure_token_columns():
+    """Idempotently add refresh_token and refresh_expires_at columns to tokens table without Alembic."""
+    inspector = inspect(engine)
+    if "tokens" not in inspector.get_table_names():
+        return
+
+    existing = {col["name"] for col in inspector.get_columns("tokens")}
+    statements = []
+    if "refresh_token" not in existing:
+        statements.append("ALTER TABLE tokens ADD COLUMN IF NOT EXISTS refresh_token VARCHAR")
+    if "refresh_expires_at" not in existing:
+        statements.append("ALTER TABLE tokens ADD COLUMN IF NOT EXISTS refresh_expires_at TIMESTAMP")
+
+    if not statements:
+        return
+
+    with engine.begin() as conn:
+        for stmt in statements:
+            conn.execute(text(stmt))
+    logger.info(f"Applied tokens table migrations: {statements}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions: Recreate tables only if they don't exist to preserve data across reloads
@@ -223,6 +245,7 @@ async def lifespan(app: FastAPI):
     ensure_user_sleep_columns()
     ensure_reading_comment_columns()
     ensure_todo_columns()
+    ensure_token_columns()
 
     seed_database()
     logger.info("Database initialized and admin user seeded.")
