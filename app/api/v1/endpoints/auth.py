@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from app import models
-from app.schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse
+from app.schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse, RefreshTokenRequest
 from app.core.database import get_db
 from app.api.deps import get_current_user
 
@@ -79,25 +79,72 @@ def login(login_in: UserLogin, db: Session = Depends(get_db)):
         
     # Set status to online
     user.status = "online"
-    logger.info(f"User {login_in.username} authenticated successfully. Generating token...")
+    logger.info(f"User {login_in.username} authenticated successfully. Generating tokens...")
     
-    # Create session token
+    # Create session tokens
     token_str = f"tok-{uuid.uuid4().hex}"
+    refresh_token_str = f"ref-{uuid.uuid4().hex}"
     expires_at = datetime.utcnow() + timedelta(days=7)
+    refresh_expires_at = datetime.utcnow() + timedelta(days=30)
     
     db_token = models.Token(
         token=token_str,
+        refresh_token=refresh_token_str,
         user_id=user.id,
-        expires_at=expires_at
+        expires_at=expires_at,
+        refresh_expires_at=refresh_expires_at
     )
     db.add(db_token)
     db.commit()
     db.refresh(user)
     
-    logger.info(f"Token generated successfully for user {login_in.username}.")
+    logger.info(f"Tokens generated successfully for user {login_in.username}.")
     return {
         "token": token_str,
+        "refresh_token": refresh_token_str,
         "expires_at": expires_at,
+        "refresh_expires_at": refresh_expires_at,
+        "user": user
+    }
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh_token(body: RefreshTokenRequest, db: Session = Depends(get_db)):
+    db_token = db.query(models.Token).filter(models.Token.refresh_token == body.refresh_token).first()
+    if not db_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token không tồn tại hoặc đã bị thu hồi. Vui lòng đăng nhập lại."
+        )
+    
+    if db_token.refresh_expires_at and db_token.refresh_expires_at < datetime.utcnow():
+        db.delete(db_token)
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token đã hết hạn. Vui lòng đăng nhập lại."
+        )
+    
+    user = db.query(models.User).filter(models.User.id == db_token.user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Người dùng không tồn tại."
+        )
+    
+    # Issue a new access token while retaining or renewing the refresh token
+    new_access_token = f"tok-{uuid.uuid4().hex}"
+    db_token.token = new_access_token
+    db_token.expires_at = datetime.utcnow() + timedelta(days=7)
+    
+    db.commit()
+    db.refresh(db_token)
+    db.refresh(user)
+    
+    return {
+        "token": db_token.token,
+        "refresh_token": db_token.refresh_token,
+        "expires_at": db_token.expires_at,
+        "refresh_expires_at": db_token.refresh_expires_at,
         "user": user
     }
 

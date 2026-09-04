@@ -34,8 +34,10 @@ class Token(Base):
     __tablename__ = "tokens"
 
     token = Column(String, primary_key=True, index=True)
+    refresh_token = Column(String, index=True, nullable=True)
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     expires_at = Column(DateTime, nullable=False)
+    refresh_expires_at = Column(DateTime, nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="tokens")

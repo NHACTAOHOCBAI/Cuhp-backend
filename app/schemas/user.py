@@ -36,10 +36,15 @@ class UserResponse(UserBase):
 
 class TokenResponse(BaseModel):
     token: str
+    refresh_token: Optional[str] = None
     expires_at: datetime
+    refresh_expires_at: Optional[datetime] = None
     user: UserResponse
 
     model_config = ConfigDict(from_attributes=True)
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 class RoleUpdate(BaseModel):
     role: str
