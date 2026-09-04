@@ -9,6 +9,7 @@ from app.api.v1.endpoints.gym import router as gym_router
 from app.api.v1.endpoints.todo import router as todo_router
 from app.api.v1.endpoints.sleep import router as sleep_router
 from app.api.v1.endpoints.habits import router as habits_router
+from app.api.v1.endpoints.snake import router as snake_router
 
 api_router = APIRouter()
 api_router.include_router(hello_router, prefix="/v1/hello", tags=["hello"])
@@ -21,6 +22,8 @@ api_router.include_router(gym_router, prefix="/v1/gym", tags=["gym"])
 api_router.include_router(todo_router, prefix="/v1/todo", tags=["todo"])
 api_router.include_router(sleep_router, prefix="/v1/sleep", tags=["sleep"])
 api_router.include_router(habits_router, prefix="/v1/habits", tags=["habits"])
+api_router.include_router(snake_router, prefix="/v1/snake", tags=["snake"])
+
 
 
 

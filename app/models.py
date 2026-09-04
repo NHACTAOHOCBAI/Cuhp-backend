@@ -261,5 +261,22 @@ class HabitLog(Base):
     habit = relationship("Habit", back_populates="logs")
 
 
+class SnakeGameStat(Base):
+    __tablename__ = "snake_game_stats"
+
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    high_score = Column(Integer, default=0, nullable=False)
+    max_combo = Column(Integer, default=0, nullable=False)
+    total_games = Column(Integer, default=0, nullable=False)
+    total_wins = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User")
+
+
+
 
 
